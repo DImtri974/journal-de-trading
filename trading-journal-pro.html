@@ -1,0 +1,1526 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>T.S STRATEGY JOURNAL PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; font-variant-numeric: tabular-nums; }
+        body { background: #060911; color: #F8FAFC; }
+        .card { background: #0F1623; border: 1px solid #1E293B; border-radius: 8px; }
+        .btn-gold { background: linear-gradient(135deg, #F3D37A 0%, #D4AF37 100%); color: #0F1623; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-gold:hover { opacity: 0.9; }
+        .btn-green { background: #2ECC71; color: #0F1623; }
+        .btn-red { background: #EF4444; color: white; }
+        .tag-gold { border: 1px solid #E5C158; background: rgba(229, 193, 88, 0.12); color: #F3D37A; }
+        .tag-gold.active { background: #E5C158; color: #0F1623; }
+        .modal-overlay { background: rgba(6, 9, 17, 0.95); backdrop-filter: blur(8px); position: fixed; inset: 0; z-index: 50; }
+        .window-header { background: #0F1623; border-bottom: 1px solid #1E293B; padding: 12px 16px; border-radius: 8px 8px 0 0; display: flex; align-items: center; gap: 8px; }
+        .window-dot { width: 12px; height: 12px; border-radius: 50%; }
+        .window-title { flex: 1; text-align: center; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #94A3B8; }
+        .cal-day { aspect-ratio: 1; border: 1px solid #1E293B; border-radius: 4px; padding: 8px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transition: all 0.2s; }
+        .cal-day:hover { border-color: #475569; }
+        .cal-day.positive { background: rgba(34, 197, 94, 0.25); border-color: #22C55E; }
+        .cal-day.negative { background: rgba(239, 68, 68, 0.22); border-color: #EF4444; }
+        .cal-day.neutral { background: rgba(59, 130, 246, 0.15); border-color: #3B82F6; }
+        .progress-bar { height: 8px; background: #1E293B; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.3s; }
+        .toast { position: fixed; bottom: 24px; right: 24px; background: rgba(34, 197, 94, 0.95); border: 1px solid #22C55E; padding: 16px 24px; border-radius: 8px; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s ease-out; z-index: 1000; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        input, select, textarea { background: #0B101B; border: 1px solid #1E293B; color: #F8FAFC; border-radius: 6px; padding: 10px 14px; width: 100%; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #3B82F6; }
+        input[type="checkbox"] { width: auto; }
+        .section-title { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: #64748B; margin-bottom: 12px; }
+        .nav-tab { padding: 12px 24px; cursor: pointer; border-bottom: 2px solid transparent; color: #64748B; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; }
+        .nav-tab:hover { color: #F8FAFC; }
+        .nav-tab.active { color: #E5C158; border-bottom-color: #E5C158; }
+        .auto-badge { background: rgba(229, 193, 88, 0.2); border: 1px solid #E5C158; color: #F3D37A; padding: 8px 16px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; color: #64748B; border-bottom: 1px solid #1E293B; }
+        td { padding: 12px; font-size: 13px; border-bottom: 1px solid #1E293B; }
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
+        .settings-tab { padding: 12px 24px; cursor: pointer; border-bottom: 2px solid #1E293B; color: #64748B; font-weight: 600; font-size: 12px; transition: all 0.2s; }
+        .settings-tab:hover { color: #F8FAFC; }
+        .settings-tab.active { color: #E5C158; border-bottom-color: #E5C158; background: rgba(229, 193, 88, 0.05); }
+        .filter-btn { padding: 8px 16px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1px solid #1E293B; cursor: pointer; transition: all 0.2s; }
+        .filter-btn:hover { border-color: #475569; }
+        .filter-btn.active { background: #E5C158; color: #0F1623; border-color: #E5C158; }
+        .stat-card { background: #0B101B; border: 1px solid #1E293B; border-radius: 6px; padding: 16px; }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        const DEMO_TRADES = [
+            { id: 1, date: '2026-10-01T09:15:00', asset: 'XAUUSD', direction: 'buy', outcome: 'tp', pnl: 500, risk: 250, strategy: 'ts', methodology: 'fvg-directe', fvgHtf: 'h4', confirmation: 'pinbar', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'stable', killzone: 'londres', notes: '', planRespected: true, setupQuality: 'A+', disciplineScore: 100, managementType: 'tp-direct', errorTag: 'none' },
+            { id: 2, date: '2026-10-01T14:30:00', asset: 'EURUSD', direction: 'sell', outcome: 'tp', pnl: 400, risk: 200, strategy: 'ts', methodology: 'fvg-affinee', fvgHtf: 'h1', confirmation: 'englobante', utConfirmation: 'm5', trendHtf: 'baissiere', emotion: 'confiant', killzone: 'new-york', notes: '', planRespected: true, setupQuality: 'A', disciplineScore: 95, managementType: 'tp-direct', errorTag: 'none' },
+            { id: 3, date: '2026-10-02T10:00:00', asset: 'NAS100', direction: 'buy', outcome: 'tp', pnl: 800, risk: 300, strategy: 'ts', methodology: 'fvg-directe', fvgHtf: 'h4', confirmation: 'pinbar', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'stable', killzone: 'londres', notes: '', planRespected: true, setupQuality: 'A+', disciplineScore: 100, managementType: 'be-plus1r', errorTag: 'none' },
+            { id: 4, date: '2026-10-03T08:45:00', asset: 'GBPUSD', direction: 'buy', outcome: 'tp', pnl: 300, risk: 150, strategy: 'ts', methodology: 'ph-pb', fvgHtf: 'h4', confirmation: 'ar-entry', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'stable', killzone: 'londres', notes: '', planRespected: true, setupQuality: 'A', disciplineScore: 90, managementType: 'tp-direct', errorTag: 'none' },
+            { id: 5, date: '2026-10-07T09:30:00', asset: 'XAUUSD', direction: 'sell', outcome: 'sl', pnl: -500, risk: 500, strategy: 'ts', methodology: 'fvg-directe', fvgHtf: 'h1', confirmation: 'pinbar', utConfirmation: 'm5', trendHtf: 'baissiere', emotion: 'stresse', killzone: 'londres', notes: '', planRespected: false, setupQuality: 'B', disciplineScore: 60, managementType: 'sl-direct', errorTag: 'entree-anticipee' },
+            { id: 6, date: '2026-10-08T11:00:00', asset: 'GER40', direction: 'buy', outcome: 'tp', pnl: 600, risk: 200, strategy: 'ts', methodology: 'fvg-affinee', fvgHtf: 'h4', confirmation: 'englobante', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'confiant', killzone: 'londres', notes: '', planRespected: true, setupQuality: 'A+', disciplineScore: 100, managementType: 'tp-direct', errorTag: 'none' },
+            { id: 7, date: '2026-10-09T13:15:00', asset: 'US30', direction: 'buy', outcome: 'tp', pnl: 700, risk: 250, strategy: 'ts', methodology: 'fvg-directe', fvgHtf: 'h4', confirmation: 'pinbar', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'stable', killzone: 'new-york', notes: '', planRespected: true, setupQuality: 'A', disciplineScore: 95, managementType: 'tp-direct', errorTag: 'none' },
+            { id: 8, date: '2026-10-10T10:30:00', asset: 'XAUUSD', direction: 'buy', outcome: 'tp', pnl: 900, risk: 300, strategy: 'ts', methodology: 'fvg-directe', fvgHtf: 'h4', confirmation: 'pinbar', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'confiant', killzone: 'londres', notes: '', planRespected: true, setupQuality: 'A+', disciplineScore: 100, managementType: 'tp-direct', errorTag: 'none' },
+            { id: 9, date: '2026-10-14T09:00:00', asset: 'EURUSD', direction: 'sell', outcome: 'sl', pnl: -400, risk: 400, strategy: 'ts', methodology: 'fvg-affinee', fvgHtf: 'h1', confirmation: 'englobante', utConfirmation: 'm5', trendHtf: 'baissiere', emotion: 'fomo', killzone: 'londres', notes: '', planRespected: false, setupQuality: 'Hors-Plan', disciplineScore: 40, managementType: 'sl-direct', errorTag: 'overtrading' },
+            { id: 10, date: '2026-10-15T14:00:00', asset: 'NAS100', direction: 'buy', outcome: 'break-even', pnl: 0, risk: 200, strategy: 'ts', methodology: 'fvg-directe', fvgHtf: 'h4', confirmation: 'pinbar', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'stable', killzone: 'new-york', notes: '', planRespected: true, setupQuality: 'A', disciplineScore: 85, managementType: 'be-plus1r', errorTag: 'none' },
+            { id: 11, date: '2026-10-16T10:15:00', asset: 'XAUUSD', direction: 'buy', outcome: 'tp', pnl: 1000, risk: 350, strategy: 'ts', methodology: 'fvg-directe', fvgHtf: 'h4', confirmation: 'pinbar', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'confiant', killzone: 'londres', notes: '', planRespected: true, setupQuality: 'A+', disciplineScore: 100, managementType: 'tp-direct', errorTag: 'none' },
+            { id: 12, date: '2026-10-17T11:45:00', asset: 'GBPUSD', direction: 'sell', outcome: 'tp', pnl: 450, risk: 200, strategy: 'ts', methodology: 'fvg-affinee', fvgHtf: 'h1', confirmation: 'englobante', utConfirmation: 'm5', trendHtf: 'baissiere', emotion: 'stable', killzone: 'londres', notes: '', planRespected: true, setupQuality: 'A', disciplineScore: 90, managementType: 'tp-direct', errorTag: 'none' },
+            { id: 13, date: '2026-10-21T09:30:00', asset: 'XAUUSD', direction: 'buy', outcome: 'sl', pnl: -600, risk: 600, strategy: 'ts', methodology: 'fvg-directe', fvgHtf: 'h4', confirmation: 'pinbar', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'stresse', killzone: 'londres', notes: '', planRespected: false, setupQuality: 'B', disciplineScore: 65, managementType: 'sl-direct', errorTag: 'fvg-mitige' },
+            { id: 14, date: '2026-10-22T10:00:00', asset: 'NAS100', direction: 'buy', outcome: 'tp', pnl: 850, risk: 300, strategy: 'ts', methodology: 'fvg-directe', fvgHtf: 'h4', confirmation: 'pinbar', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'confiant', killzone: 'londres', notes: '', planRespected: true, setupQuality: 'A+', disciplineScore: 100, managementType: 'tp-direct', errorTag: 'none' },
+            { id: 15, date: '2026-10-23T13:30:00', asset: 'US30', direction: 'buy', outcome: 'sl', pnl: -450, risk: 450, strategy: 'ts', methodology: 'fvg-affinee', fvgHtf: 'h4', confirmation: 'englobante', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'frustre', killzone: 'new-york', notes: '', planRespected: false, setupQuality: 'Hors-Plan', disciplineScore: 50, managementType: 'sl-direct', errorTag: 'sl-trop-serre' },
+            { id: 16, date: '2026-10-24T10:45:00', asset: 'XAUUSD', direction: 'buy', outcome: 'tp', pnl: 800, risk: 300, strategy: 'ts', methodology: 'fvg-directe', fvgHtf: 'h4', confirmation: 'pinbar', utConfirmation: 'm15', trendHtf: 'haussiere', emotion: 'stable', killzone: 'londres', notes: '', planRespected: true, setupQuality: 'A+', disciplineScore: 100, managementType: 'tp-direct', errorTag: 'none' }
+        ];
+
+        function TradingJournal() {
+            const [trades, setTrades] = useState([]);
+            const [currentView, setCurrentView] = useState('dashboard');
+            const [showTradeModal, setShowTradeModal] = useState(false);
+            const [showSettingsModal, setShowSettingsModal] = useState(false);
+            const [showDayDetailModal, setShowDayDetailModal] = useState(false);
+            const [selectedDayTrades, setSelectedDayTrades] = useState([]);
+            const [settingsTab, setSettingsTab] = useState('account');
+            const [showToast, setShowToast] = useState(false);
+            const [toastMessage, setToastMessage] = useState('');
+            const [selectedMonth, setSelectedMonth] = useState('2026-11');
+            const [editingTrade, setEditingTrade] = useState(null);
+
+            const [settings, setSettings] = useState({
+                challengeName: 'Mon Journal de Trading',
+                subtitle: 'Prop Firm - Phase 1',
+                startingCapital: 100000,
+                currency: '€',
+                targetPercent: 8,
+                maxDailyLossPercent: 5,
+                maxDrawdownPercent: 10,
+                maxTradesPerDay: 3,
+                maxRiskPerTrade: 1,
+                propFirm: 'ClickFunded',
+                customAssets: ['EURUSD', 'GBPUSD', 'XAUUSD', 'NAS100', 'GER40', 'US30'],
+                customMethodologies: ['FVG entrée directe', 'FVG entrée affinée', 'PH / PB (chasse)'],
+                customSignals: ['Pinbar', 'Englobante', 'AR Entry']
+            });
+
+            const [filters, setFilters] = useState({
+                asset: 'all',
+                direction: 'all',
+                setup: 'all',
+                signal: 'all',
+                killzone: 'all',
+                emotion: 'all',
+                planRespected: 'all'
+            });
+
+            const [formData, setFormData] = useState({
+                date: '',
+                asset: '',
+                direction: 'buy',
+                outcome: 'tp',
+                pnl: '',
+                risk: '',
+                strategy: 'ts',
+                methodology: '',
+                fvgHtf: '',
+                confirmation: '',
+                utConfirmation: '',
+                trendHtf: '',
+                emotion: '',
+                killzone: '',
+                notes: '',
+                planRespected: true,
+                setupQuality: 'A',
+                disciplineScore: 100,
+                managementType: 'tp-direct',
+                errorTag: 'none',
+                checklist: {
+                    fvgClean: false,
+                    signalConfirmed: false,
+                    riskCompliant: false,
+                    noNews: false
+                }
+            });
+
+            const chartRef = useRef(null);
+            const chartInstanceRef = useRef(null);
+
+            useEffect(() => {
+                const saved = localStorage.getItem('tradingJournalProData');
+                const savedSettings = localStorage.getItem('tradingJournalProSettings');
+
+                if (saved) {
+                    setTrades(JSON.parse(saved));
+                }
+
+                if (savedSettings) {
+                    setSettings(JSON.parse(savedSettings));
+                }
+            }, []);
+
+            useEffect(() => {
+                localStorage.setItem('tradingJournalProData', JSON.stringify(trades));
+            }, [trades]);
+
+            useEffect(() => {
+                localStorage.setItem('tradingJournalProSettings', JSON.stringify(settings));
+            }, [settings]);
+
+            useEffect(() => {
+                if (formData.fvgHtf === 'h4') {
+                    setFormData(prev => ({ ...prev, utConfirmation: 'm15' }));
+                } else if (formData.fvgHtf === 'h1') {
+                    setFormData(prev => ({ ...prev, utConfirmation: 'm5' }));
+                } else if (formData.fvgHtf === 'daily') {
+                    setFormData(prev => ({ ...prev, utConfirmation: 'h1' }));
+                }
+            }, [formData.fvgHtf]);
+
+            useEffect(() => {
+                if (formData.outcome === 'sl' && formData.risk) {
+                    setFormData(prev => ({ ...prev, pnl: -Math.abs(parseFloat(prev.risk)) }));
+                } else if (formData.outcome === 'break-even') {
+                    setFormData(prev => ({ ...prev, pnl: 0 }));
+                }
+            }, [formData.outcome, formData.risk]);
+
+            useEffect(() => {
+                const checklistValues = Object.values(formData.checklist);
+                const checkedCount = checklistValues.filter(v => v).length;
+                const score = (checkedCount / checklistValues.length) * 100;
+                setFormData(prev => ({ ...prev, disciplineScore: score }));
+            }, [formData.checklist]);
+
+            const filteredTrades = useMemo(() => {
+                return trades.filter(t => {
+                    if (filters.asset !== 'all' && t.asset !== filters.asset) return false;
+                    if (filters.direction !== 'all' && t.direction !== filters.direction) return false;
+                    if (filters.setup !== 'all') {
+                        const tradeSetup = `${t.fvgHtf}-${t.utConfirmation}`;
+                        if (tradeSetup !== filters.setup) return false;
+                    }
+                    if (filters.signal !== 'all' && t.confirmation !== filters.signal) return false;
+                    if (filters.killzone !== 'all' && t.killzone !== filters.killzone) return false;
+                    if (filters.emotion !== 'all' && t.emotion !== filters.emotion) return false;
+                    if (filters.planRespected === 'yes' && !t.planRespected) return false;
+                    if (filters.planRespected === 'no' && t.planRespected) return false;
+                    return true;
+                });
+            }, [trades, filters]);
+
+            const stats = useMemo(() => {
+                const tradesToAnalyze = filteredTrades;
+                const total = tradesToAnalyze.length;
+                const wins = tradesToAnalyze.filter(t => t.pnl > 0).length;
+                const losses = tradesToAnalyze.filter(t => t.pnl < 0).length;
+                const breakEven = tradesToAnalyze.filter(t => t.pnl === 0).length;
+
+                const totalPnl = tradesToAnalyze.reduce((sum, t) => sum + t.pnl, 0);
+                const totalR = tradesToAnalyze.reduce((sum, t) => sum + (t.risk ? t.pnl / t.risk : 0), 0);
+                const avgR = total > 0 ? totalR / total : 0;
+
+                const winRate = (wins + losses) > 0 ? (wins / (wins + losses)) * 100 : 0;
+
+                const totalGains = tradesToAnalyze.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0);
+                const totalLosses = Math.abs(tradesToAnalyze.filter(t => t.pnl < 0).reduce((sum, t) => sum + t.pnl, 0));
+                const avgGain = wins > 0 ? totalGains / wins : 0;
+                const avgLoss = losses > 0 ? totalLosses / losses : 0;
+                const profitFactor = totalLosses > 0 ? totalGains / totalLosses : totalGains > 0 ? 999 : 0;
+
+                const balance = settings.startingCapital + trades.reduce((sum, t) => sum + t.pnl, 0);
+                const pnlPercent = (totalPnl / settings.startingCapital) * 100;
+
+                const indisciplineCost = trades.filter(t => !t.planRespected).reduce((sum, t) => sum + (t.pnl < 0 ? Math.abs(t.pnl) : 0), 0);
+                const indisciplineCostR = trades.filter(t => !t.planRespected).reduce((sum, t) => sum + (t.risk && t.pnl < 0 ? Math.abs(t.pnl / t.risk) : 0), 0);
+
+                return {
+                    balance,
+                    totalPnl,
+                    pnlPercent,
+                    winRate,
+                    wins,
+                    losses,
+                    breakEven,
+                    totalR,
+                    avgR,
+                    profitFactor,
+                    avgGain,
+                    avgLoss,
+                    total,
+                    indisciplineCost,
+                    indisciplineCostR
+                };
+            }, [filteredTrades, trades, settings.startingCapital]);
+
+            const monthTrades = useMemo(() => {
+                return trades.filter(t => t.date.startsWith(selectedMonth));
+            }, [trades, selectedMonth]);
+
+            const monthStats = useMemo(() => {
+                const total = monthTrades.length;
+                const totalPnl = monthTrades.reduce((sum, t) => sum + t.pnl, 0);
+                const pnlPercent = (totalPnl / settings.startingCapital) * 100;
+                const greenDays = new Set(monthTrades.filter(t => t.pnl > 0).map(t => t.date.split('T')[0])).size;
+
+                return { totalPnl, pnlPercent, total, greenDays };
+            }, [monthTrades, settings.startingCapital]);
+
+            const calendarData = useMemo(() => {
+                const [year, month] = selectedMonth.split('-');
+                const firstDay = new Date(year, month - 1, 1);
+                const lastDay = new Date(year, month, 0);
+                const daysInMonth = lastDay.getDate();
+                const startDayOfWeek = firstDay.getDay();
+
+                const days = [];
+                const dayPnl = {};
+                const dayTrades = {};
+
+                monthTrades.forEach(trade => {
+                    const day = trade.date.split('T')[0];
+                    dayPnl[day] = (dayPnl[day] || 0) + trade.pnl;
+                    if (!dayTrades[day]) dayTrades[day] = [];
+                    dayTrades[day].push(trade);
+                });
+
+                for (let i = 0; i < (startDayOfWeek === 0 ? 6 : startDayOfWeek - 1); i++) {
+                    days.push(null);
+                }
+
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${year}-${month}-${String(day).padStart(2, '0')}`;
+                    days.push({
+                        day,
+                        date: dateStr,
+                        pnl: dayPnl[dateStr] || null,
+                        trades: dayTrades[dateStr] || []
+                    });
+                }
+
+                const weeks = [];
+                for (let i = 0; i < days.length; i += 7) {
+                    const week = days.slice(i, i + 7);
+                    const weekPnl = week.reduce((sum, d) => sum + (d?.pnl || 0), 0);
+                    weeks.push({ days: week, total: weekPnl });
+                }
+
+                return weeks;
+            }, [monthTrades, selectedMonth]);
+
+            const todayTrades = useMemo(() => {
+                const today = new Date().toISOString().split('T')[0];
+                return trades.filter(t => t.date.startsWith(today));
+            }, [trades]);
+
+            const todayPnl = todayTrades.reduce((sum, t) => sum + t.pnl, 0);
+            const todayPnlPercent = (todayPnl / settings.startingCapital) * 100;
+
+            const maxDrawdown = useMemo(() => {
+                let peak = settings.startingCapital;
+                let maxDD = 0;
+                let cumulative = settings.startingCapital;
+
+                trades.sort((a, b) => new Date(a.date) - new Date(b.date)).forEach(t => {
+                    cumulative += t.pnl;
+                    if (cumulative > peak) peak = cumulative;
+                    const dd = ((peak - cumulative) / peak) * 100;
+                    if (dd > maxDD) maxDD = dd;
+                });
+
+                return maxDD;
+            }, [trades, settings.startingCapital]);
+
+            const handleDayClick = (day) => {
+                if (day && day.trades.length > 0) {
+                    setSelectedDayTrades(day.trades);
+                    setShowDayDetailModal(true);
+                }
+            };
+
+            const handleAddTrade = () => {
+                if (editingTrade) {
+                    setTrades(trades.map(t => t.id === editingTrade.id ? { ...formData, id: editingTrade.id, pnl: parseFloat(formData.pnl), risk: parseFloat(formData.risk) } : t));
+                    setToastMessage('✓ Trade modifié avec succès');
+                } else {
+                    const newTrade = {
+                        id: Date.now(),
+                        ...formData,
+                        pnl: parseFloat(formData.pnl),
+                        risk: parseFloat(formData.risk)
+                    };
+                    setTrades([...trades, newTrade]);
+
+                    const r = formData.risk ? (formData.pnl / formData.risk).toFixed(2) : '0.00';
+                    setToastMessage(`✓ Trade enregistré • ${r >= 0 ? '+' : ''}${r} R`);
+                }
+
+                setShowToast(true);
+                setTimeout(() => setShowToast(false), 3000);
+
+                setShowTradeModal(false);
+                setEditingTrade(null);
+                resetForm();
+            };
+
+            const handleEditTrade = (trade) => {
+                setEditingTrade(trade);
+                setFormData(trade);
+                setShowTradeModal(true);
+            };
+
+            const handleDeleteTrade = (tradeId) => {
+                if (confirm('Supprimer ce trade ?')) {
+                    setTrades(trades.filter(t => t.id !== tradeId));
+                    setToastMessage('✓ Trade supprimé');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                }
+            };
+
+            const resetForm = () => {
+                setFormData({
+                    date: '',
+                    asset: '',
+                    direction: 'buy',
+                    outcome: 'tp',
+                    pnl: '',
+                    risk: '',
+                    strategy: 'ts',
+                    methodology: '',
+                    fvgHtf: '',
+                    confirmation: '',
+                    utConfirmation: '',
+                    trendHtf: '',
+                    emotion: '',
+                    killzone: '',
+                    notes: '',
+                    planRespected: true,
+                    setupQuality: 'A',
+                    disciplineScore: 100,
+                    managementType: 'tp-direct',
+                    errorTag: 'none',
+                    checklist: {
+                        fvgClean: false,
+                        signalConfirmed: false,
+                        riskCompliant: false,
+                        noNews: false
+                    }
+                });
+            };
+
+            const loadDemoData = () => {
+                if (confirm('Charger 16 trades de démonstration (Octobre 2026) ?')) {
+                    setTrades(DEMO_TRADES);
+                    setSelectedMonth('2026-10');
+                    setToastMessage('✓ Données de test chargées');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                }
+            };
+
+            const clearAllData = () => {
+                if (confirm('ATTENTION : Supprimer TOUS les trades et réinitialiser le journal à zéro ? Cette action est irréversible.')) {
+                    setTrades([]);
+                    setToastMessage('✓ Journal réinitialisé à zéro');
+                    setShowToast(true);
+                    setTimeout(() => setShowToast(false), 3000);
+                }
+            };
+
+            const exportJSON = () => {
+                const data = { trades, settings, exportDate: new Date().toISOString() };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `trading_journal_backup_${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+            };
+
+            const importJSON = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.trades) setTrades(data.trades);
+                        if (data.settings) setSettings(data.settings);
+                        setToastMessage('✓ Données importées avec succès');
+                        setShowToast(true);
+                        setTimeout(() => setShowToast(false), 3000);
+                    } catch (err) {
+                        alert('Erreur lors de l\'import du fichier JSON');
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            const exportCSV = () => {
+                const headers = ['Date', 'Actif', 'Direction', 'Issue', 'P&L (EUR)', 'Risque', 'R', 'Stratégie', 'Méthodologie', 'FVG HTF', 'Confirmation', 'UT Confirmation', 'Tendance HTF', 'Émotion', 'Killzone', 'Plan Respecté', 'Qualité Setup', 'Score Discipline', 'Gestion', 'Tag Erreur', 'Notes'];
+                const rows = trades.map(t => [
+                    t.date,
+                    t.asset,
+                    t.direction,
+                    t.outcome,
+                    t.pnl,
+                    t.risk,
+                    t.risk ? (t.pnl / t.risk).toFixed(2) : '0',
+                    t.strategy,
+                    t.methodology || '',
+                    t.fvgHtf || '',
+                    t.confirmation || '',
+                    t.utConfirmation || '',
+                    t.trendHtf || '',
+                    t.emotion || '',
+                    t.killzone || '',
+                    t.planRespected ? 'Oui' : 'Non',
+                    t.setupQuality || '',
+                    t.disciplineScore || '',
+                    t.managementType || '',
+                    t.errorTag || '',
+                    t.notes || ''
+                ]);
+
+                const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+                const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `trades_export_${new Date().toISOString().split('T')[0]}.csv`;
+                link.click();
+            };
+
+            const calculatedR = formData.risk && formData.pnl ? (parseFloat(formData.pnl) / parseFloat(formData.risk)).toFixed(2) : '0.00';
+            const calculatedPercent = formData.pnl ? ((parseFloat(formData.pnl) / settings.startingCapital) * 100).toFixed(2) : '0.00';
+
+            const sortedTrades = [...filteredTrades].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            const performanceBySetup = useMemo(() => {
+                const setups = {};
+                filteredTrades.forEach(t => {
+                    const key = `${t.fvgHtf}-${t.utConfirmation}`;
+                    if (!setups[key]) {
+                        setups[key] = { trades: 0, wins: 0, totalR: 0, totalPnl: 0 };
+                    }
+                    setups[key].trades++;
+                    setups[key].totalPnl += t.pnl;
+                    setups[key].totalR += t.risk ? t.pnl / t.risk : 0;
+                    if (t.pnl > 0) setups[key].wins++;
+                });
+
+                Object.keys(setups).forEach(k => {
+                    setups[k].winRate = (setups[k].wins / setups[k].trades) * 100;
+                    setups[k].avgR = setups[k].totalR / setups[k].trades;
+                    setups[k].profitFactor = 0;
+                });
+
+                return setups;
+            }, [filteredTrades]);
+
+            const performanceByAsset = useMemo(() => {
+                const assets = {};
+                filteredTrades.forEach(t => {
+                    if (!assets[t.asset]) {
+                        assets[t.asset] = { trades: 0, wins: 0, totalR: 0, totalPnl: 0 };
+                    }
+                    assets[t.asset].trades++;
+                    assets[t.asset].totalPnl += t.pnl;
+                    assets[t.asset].totalR += t.risk ? t.pnl / t.risk : 0;
+                    if (t.pnl > 0) assets[t.asset].wins++;
+                });
+
+                Object.keys(assets).forEach(k => {
+                    assets[k].winRate = (assets[k].wins / assets[k].trades) * 100;
+                    assets[k].avgR = assets[k].totalR / assets[k].trades;
+                });
+
+                return Object.entries(assets).sort((a, b) => b[1].totalPnl - a[1].totalPnl);
+            }, [filteredTrades]);
+
+            const performanceByKillzone = useMemo(() => {
+                const killzones = {};
+                filteredTrades.forEach(t => {
+                    if (!t.killzone) return;
+                    if (!killzones[t.killzone]) {
+                        killzones[t.killzone] = { trades: 0, wins: 0, totalR: 0, totalPnl: 0 };
+                    }
+                    killzones[t.killzone].trades++;
+                    killzones[t.killzone].totalPnl += t.pnl;
+                    killzones[t.killzone].totalR += t.risk ? t.pnl / t.risk : 0;
+                    if (t.pnl > 0) killzones[t.killzone].wins++;
+                });
+
+                Object.keys(killzones).forEach(k => {
+                    killzones[k].winRate = (killzones[k].wins / killzones[k].trades) * 100;
+                    killzones[k].avgR = killzones[k].totalR / killzones[k].trades;
+                });
+
+                return killzones;
+            }, [filteredTrades]);
+
+            const performanceByEmotion = useMemo(() => {
+                const emotions = {};
+                filteredTrades.forEach(t => {
+                    if (!t.emotion) return;
+                    if (!emotions[t.emotion]) {
+                        emotions[t.emotion] = { trades: 0, wins: 0, totalR: 0, totalPnl: 0 };
+                    }
+                    emotions[t.emotion].trades++;
+                    emotions[t.emotion].totalPnl += t.pnl;
+                    emotions[t.emotion].totalR += t.risk ? t.pnl / t.risk : 0;
+                    if (t.pnl > 0) emotions[t.emotion].wins++;
+                });
+
+                Object.keys(emotions).forEach(k => {
+                    emotions[k].winRate = (emotions[k].wins / emotions[k].trades) * 100;
+                    emotions[k].avgR = emotions[k].totalR / emotions[k].trades;
+                });
+
+                return emotions;
+            }, [filteredTrades]);
+
+            return (
+                <div className="min-h-screen">
+                    {/* Top Navigation */}
+                    <div className="border-b border-gray-800 bg-[#0B101B]">
+                        <div className="max-w-7xl mx-auto px-8 flex items-center justify-between">
+                            <div className="flex items-center gap-8">
+                                <div className="flex items-center gap-3 py-4">
+                                    <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">TS</div>
+                                    <div>
+                                        <h1 className="text-sm font-bold">{settings.challengeName}</h1>
+                                        <div className="text-xs text-gray-500">{settings.subtitle}</div>
+                                    </div>
+                                </div>
+                                <div className="flex">
+                                    <div className={`nav-tab ${currentView === 'dashboard' ? 'active' : ''}`} onClick={() => setCurrentView('dashboard')}>TOUT</div>
+                                    <div className={`nav-tab ${currentView === 'journal' ? 'active' : ''}`} onClick={() => setCurrentView('journal')}>JOURNAL DES TRADES</div>
+                                    <div className={`nav-tab ${currentView === 'analysis' ? 'active' : ''}`} onClick={() => setCurrentView('analysis')}>ANALYSE & PROGRESSION</div>
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <button onClick={() => setShowSettingsModal(true)} className="px-4 py-2 rounded-lg border border-gray-700 text-sm hover:bg-gray-800">
+                                    MODIFIER LE COMPTE
+                                </button>
+                                <button onClick={exportCSV} className="px-4 py-2 rounded-lg border border-gray-700 text-sm hover:bg-gray-800">
+                                    EXPORTER CSV
+                                </button>
+                                <button onClick={() => setShowTradeModal(true)} className="btn-gold px-6 py-2 rounded-lg text-sm">
+                                    + AJOUTER UN TRADE
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="max-w-7xl mx-auto p-8">
+                        {currentView === 'dashboard' && (
+                            <>
+                                {/* KPIs */}
+                                <div className="grid grid-cols-6 gap-4 mb-8">
+                                    <div className="card p-5">
+                                        <div className="section-title">SOLDE DU COMPTE</div>
+                                        <div className="mono text-2xl font-bold mb-1" style={{color: '#E5C158'}}>
+                                            {stats.balance.toLocaleString('fr-FR', {minimumFractionDigits: 2})} {settings.currency}
+                                        </div>
+                                        <div className="text-xs text-gray-400">Capital {settings.startingCapital.toLocaleString('fr-FR')} {settings.currency}</div>
+                                    </div>
+
+                                    <div className="card p-5">
+                                        <div className="section-title">RÉSULTAT</div>
+                                        <div className={`mono text-2xl font-bold mb-1 ${stats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            {stats.totalPnl >= 0 ? '+' : ''}{stats.totalPnl.toLocaleString('fr-FR', {minimumFractionDigits: 2})} {settings.currency}
+                                        </div>
+                                        <div className="text-xs text-gray-400">{stats.pnlPercent >= 0 ? '+' : ''}{stats.pnlPercent.toFixed(2)} % du capital</div>
+                                    </div>
+
+                                    <div className="card p-5">
+                                        <div className="section-title">WIN RATE</div>
+                                        <div className="mono text-2xl font-bold mb-1 text-white">
+                                            {stats.winRate.toFixed(1)} %
+                                        </div>
+                                        <div className="text-xs text-gray-400">{stats.wins} gagnants - {stats.losses} perdants</div>
+                                    </div>
+
+                                    <div className="card p-5">
+                                        <div className="section-title">TOTAL EN R</div>
+                                        <div className={`mono text-2xl font-bold mb-1 ${stats.totalR >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            {stats.totalR >= 0 ? '+' : ''}{stats.totalR.toFixed(2)} R
+                                        </div>
+                                        <div className="text-xs text-gray-400">Moyenne {stats.avgR >= 0 ? '+' : ''}{stats.avgR.toFixed(2)} R / trade</div>
+                                    </div>
+
+                                    <div className="card p-5">
+                                        <div className="section-title">PROFIT FACTOR</div>
+                                        <div className="mono text-2xl font-bold mb-1 text-white">
+                                            {stats.profitFactor.toFixed(2)}
+                                        </div>
+                                        <div className="text-xs text-gray-400">Gain moy. {stats.avgGain.toFixed(0)} • Perte moy. {stats.avgLoss.toFixed(0)}</div>
+                                    </div>
+
+                                    <div className="card p-5">
+                                        <div className="section-title">TRADES</div>
+                                        <div className="mono text-2xl font-bold mb-1 text-white">
+                                            {stats.total}
+                                        </div>
+                                        <div className="text-xs text-gray-400">Depuis le début</div>
+                                    </div>
+                                </div>
+
+                                {/* Calendar and Rules */}
+                                <div className="grid grid-cols-3 gap-8 mb-8">
+                                    <div className="col-span-2 card p-6">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div>
+                                                <div className="section-title mb-2">CALENDRIER</div>
+                                                <div className="text-sm">
+                                                    <span className={monthStats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                                        {monthStats.totalPnl >= 0 ? '+' : ''}{monthStats.totalPnl.toLocaleString('fr-FR')} {settings.currency}
+                                                    </span>
+                                                    <span className="text-gray-400"> • {monthStats.pnlPercent >= 0 ? '+' : ''}{monthStats.pnlPercent.toFixed(2)} % • {monthStats.total} trades • {monthStats.greenDays} jours verts</span>
+                                                </div>
+                                            </div>
+                                            <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} className="px-4 py-2 text-sm">
+                                                <option value="2026-11">NOVEMBRE 2026</option>
+                                                <option value="2026-10">OCTOBRE 2026</option>
+                                                <option value="2026-12">DÉCEMBRE 2026</option>
+                                                <option value="2027-01">JANVIER 2027</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="grid grid-cols-8 gap-2">
+                                            <div className="text-center text-xs font-semibold text-gray-500 py-2">LUN</div>
+                                            <div className="text-center text-xs font-semibold text-gray-500 py-2">MAR</div>
+                                            <div className="text-center text-xs font-semibold text-gray-500 py-2">MER</div>
+                                            <div className="text-center text-xs font-semibold text-gray-500 py-2">JEU</div>
+                                            <div className="text-center text-xs font-semibold text-gray-500 py-2">VEN</div>
+                                            <div className="text-center text-xs font-semibold text-gray-500 py-2">SAM</div>
+                                            <div className="text-center text-xs font-semibold text-gray-500 py-2">DIM</div>
+                                            <div className="text-center text-xs font-semibold text-gray-500 py-2">SEMAINE</div>
+
+                                            {calendarData.map((week, weekIdx) => (
+                                                <React.Fragment key={weekIdx}>
+                                                    {week.days.map((day, dayIdx) => (
+                                                        <div
+                                                            key={dayIdx}
+                                                            className={`cal-day ${
+                                                                day?.pnl > 0 ? 'positive' :
+                                                                day?.pnl < 0 ? 'negative' :
+                                                                day?.pnl === 0 ? 'neutral' : ''
+                                                            }`}
+                                                            onClick={() => handleDayClick(day)}
+                                                        >
+                                                            {day && (
+                                                                <>
+                                                                    <div className="text-xs text-gray-400">{day.day}</div>
+                                                                    {day.pnl !== null && (
+                                                                        <div className={`text-xs mono font-semibold ${
+                                                                            day.pnl > 0 ? 'text-green-300' :
+                                                                            day.pnl < 0 ? 'text-red-300' :
+                                                                            'text-blue-300'
+                                                                        }`}>
+                                                                            {day.pnl > 0 ? '+' : ''}{day.pnl.toLocaleString('fr-FR', {maximumFractionDigits: 0})}
+                                                                        </div>
+                                                                    )}
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    <div className="cal-day flex items-center justify-center">
+                                                        <div className={`text-xs mono font-bold ${
+                                                            week.total > 0 ? 'text-green-300' :
+                                                            week.total < 0 ? 'text-red-300' :
+                                                            'text-gray-400'
+                                                        }`}>
+                                                            {week.total > 0 ? '+' : ''}{week.total.toLocaleString('fr-FR', {maximumFractionDigits: 0})}
+                                                        </div>
+                                                    </div>
+                                                </React.Fragment>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Rules */}
+                                    <div className="card p-6">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div className="section-title mb-0">MES RÈGLES</div>
+                                            <div className="text-xs font-semibold" style={{color: '#E5C158'}}>{settings.propFirm}</div>
+                                        </div>
+
+                                        <div className="space-y-5">
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-xs text-gray-300">Objectif du mois</span>
+                                                    <span className="text-xs mono font-semibold">{monthStats.pnlPercent.toFixed(2)} % / +{settings.targetPercent} %</span>
+                                                </div>
+                                                <div className="progress-bar">
+                                                    <div
+                                                        className="progress-fill"
+                                                        style={{
+                                                            width: `${Math.min((monthStats.pnlPercent / settings.targetPercent) * 100, 100)}%`,
+                                                            background: 'linear-gradient(90deg, #F3D37A 0%, #D4AF37 100%)'
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-xs text-gray-300">Perte du jour</span>
+                                                    <span className="text-xs mono font-semibold">{todayPnlPercent.toFixed(2)} % / -{settings.maxDailyLossPercent} %</span>
+                                                </div>
+                                                <div className="progress-bar">
+                                                    <div
+                                                        className="progress-fill"
+                                                        style={{
+                                                            width: `${Math.min(Math.abs(todayPnlPercent / settings.maxDailyLossPercent) * 100, 100)}%`,
+                                                            background: todayPnlPercent < -settings.maxDailyLossPercent ? '#EF4444' : '#3B82F6'
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-xs text-gray-300">Max Drawdown</span>
+                                                    <span className="text-xs mono font-semibold">{maxDrawdown.toFixed(2)} % / -{settings.maxDrawdownPercent} %</span>
+                                                </div>
+                                                <div className="progress-bar">
+                                                    <div
+                                                        className="progress-fill"
+                                                        style={{
+                                                            width: `${Math.min((maxDrawdown / settings.maxDrawdownPercent) * 100, 100)}%`,
+                                                            background: maxDrawdown >= settings.maxDrawdownPercent ? '#EF4444' : '#F59E0B'
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-xs text-gray-300">Trades aujourd'hui</span>
+                                                    <span className="text-xs mono font-semibold">{todayTrades.length} / {settings.maxTradesPerDay}</span>
+                                                </div>
+                                                <div className="progress-bar">
+                                                    <div
+                                                        className="progress-fill"
+                                                        style={{
+                                                            width: `${(todayTrades.length / settings.maxTradesPerDay) * 100}%`,
+                                                            background: '#3B82F6'
+                                                        }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <span className="text-xs text-gray-300">Risque max / trade</span>
+                                                    <span className="text-xs mono font-semibold">~ / {settings.maxRiskPerTrade} %</span>
+                                                </div>
+                                                <div className="progress-bar">
+                                                    <div className="progress-fill" style={{ width: '0%', background: '#22C55E' }}></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {currentView === 'journal' && (
+                            <>
+                                {/* KPIs */}
+                                <div className="grid grid-cols-6 gap-4 mb-6">
+                                    <div className="card p-4">
+                                        <div className="text-xs text-gray-400 mb-1">SOLDE</div>
+                                        <div className="mono text-xl font-bold" style={{color: '#E5C158'}}>
+                                            {stats.balance.toLocaleString('fr-FR', {minimumFractionDigits: 0})} {settings.currency}
+                                        </div>
+                                    </div>
+                                    <div className="card p-4">
+                                        <div className="text-xs text-gray-400 mb-1">RÉSULTAT</div>
+                                        <div className={`mono text-xl font-bold ${stats.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            {stats.totalPnl >= 0 ? '+' : ''}{stats.totalPnl.toLocaleString('fr-FR', {minimumFractionDigits: 0})} {settings.currency}
+                                        </div>
+                                    </div>
+                                    <div className="card p-4">
+                                        <div className="text-xs text-gray-400 mb-1">WIN RATE</div>
+                                        <div className="mono text-xl font-bold text-white">{stats.winRate.toFixed(1)} %</div>
+                                    </div>
+                                    <div className="card p-4">
+                                        <div className="text-xs text-gray-400 mb-1">TOTAL R</div>
+                                        <div className={`mono text-xl font-bold ${stats.totalR >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                            {stats.totalR >= 0 ? '+' : ''}{stats.totalR.toFixed(2)} R
+                                        </div>
+                                    </div>
+                                    <div className="card p-4">
+                                        <div className="text-xs text-gray-400 mb-1">PROFIT FACTOR</div>
+                                        <div className="mono text-xl font-bold text-white">{stats.profitFactor.toFixed(2)}</div>
+                                    </div>
+                                    <div className="card p-4">
+                                        <div className="text-xs text-gray-400 mb-1">TRADES</div>
+                                        <div className="mono text-xl font-bold text-white">{stats.total}</div>
+                                    </div>
+                                </div>
+
+                                {/* Filters */}
+                                <div className="card p-4 mb-6">
+                                    <div className="text-xs font-semibold text-gray-400 mb-3">FILTRES</div>
+                                    <div className="grid grid-cols-7 gap-3">
+                                        <select value={filters.asset} onChange={(e) => setFilters({...filters, asset: e.target.value})} className="text-xs py-2">
+                                            <option value="all">Tous les actifs</option>
+                                            {settings.customAssets.map(a => <option key={a} value={a}>{a}</option>)}
+                                        </select>
+                                        <select value={filters.direction} onChange={(e) => setFilters({...filters, direction: e.target.value})} className="text-xs py-2">
+                                            <option value="all">Tous les sens</option>
+                                            <option value="buy">Achat</option>
+                                            <option value="sell">Vente</option>
+                                        </select>
+                                        <select value={filters.setup} onChange={(e) => setFilters({...filters, setup: e.target.value})} className="text-xs py-2">
+                                            <option value="all">Tous les setups</option>
+                                            <option value="h4-m15">H4 → M15</option>
+                                            <option value="h1-m5">H1 → M5</option>
+                                            <option value="daily-h1">Daily → H1</option>
+                                        </select>
+                                        <select value={filters.signal} onChange={(e) => setFilters({...filters, signal: e.target.value})} className="text-xs py-2">
+                                            <option value="all">Tous les signaux</option>
+                                            {settings.customSignals.map(s => <option key={s} value={s.toLowerCase()}>{s}</option>)}
+                                        </select>
+                                        <select value={filters.killzone} onChange={(e) => setFilters({...filters, killzone: e.target.value})} className="text-xs py-2">
+                                            <option value="all">Toutes les sessions</option>
+                                            <option value="londres">Londres</option>
+                                            <option value="new-york">New York</option>
+                                            <option value="asie">Asie</option>
+                                        </select>
+                                        <select value={filters.emotion} onChange={(e) => setFilters({...filters, emotion: e.target.value})} className="text-xs py-2">
+                                            <option value="all">Toutes les émotions</option>
+                                            <option value="stable">Stable</option>
+                                            <option value="confiant">Confiant</option>
+                                            <option value="stresse">Stressé</option>
+                                            <option value="fomo">FOMO</option>
+                                            <option value="frustre">Frustré</option>
+                                        </select>
+                                        <select value={filters.planRespected} onChange={(e) => setFilters({...filters, planRespected: e.target.value})} className="text-xs py-2">
+                                            <option value="all">Plan : Tous</option>
+                                            <option value="yes">Plan Respecté</option>
+                                            <option value="no">Hors Plan</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Trade History Table */}
+                                <div className="card p-6">
+                                    <div className="section-title mb-4">HISTORIQUE DES TRADES ({sortedTrades.length})</div>
+                                    <div className="overflow-x-auto">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>DATE</th>
+                                                    <th>ACTIF</th>
+                                                    <th>SENS</th>
+                                                    <th>SETUP</th>
+                                                    <th>SIGNAL</th>
+                                                    <th>R</th>
+                                                    <th>RÉSULTAT</th>
+                                                    <th>PLAN</th>
+                                                    <th>ÉMOTION</th>
+                                                    <th>ACTIONS</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {sortedTrades.map(t => (
+                                                    <tr key={t.id}>
+                                                        <td className="mono text-xs">{new Date(t.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })} {new Date(t.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</td>
+                                                        <td className="mono text-xs font-semibold">{t.asset}</td>
+                                                        <td className={`text-xs font-semibold ${t.direction === 'buy' ? 'text-green-400' : 'text-red-400'}`}>
+                                                            {t.direction === 'buy' ? 'BUY' : 'SELL'}
+                                                        </td>
+                                                        <td className="text-xs">{t.fvgHtf?.toUpperCase()} → {t.utConfirmation?.toUpperCase()}</td>
+                                                        <td className="text-xs">{t.confirmation || '-'}</td>
+                                                        <td className="mono text-xs">
+                                                            <span className={t.risk ? (t.pnl / t.risk >= 0 ? 'text-green-400' : 'text-red-400') : ''}>
+                                                                {t.risk ? `${(t.pnl / t.risk) >= 0 ? '+' : ''}${(t.pnl / t.risk).toFixed(2)} R` : '-'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="mono text-xs">
+                                                            <span className={t.pnl >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                                                {t.pnl >= 0 ? '+' : ''}{t.pnl.toLocaleString('fr-FR', {maximumFractionDigits: 0})} {settings.currency}
+                                                            </span>
+                                                        </td>
+                                                        <td className="text-xs">
+                                                            {t.planRespected ? <span className="text-green-400">✓ Oui</span> : <span className="text-red-400">✗ Non</span>}
+                                                        </td>
+                                                        <td className="text-xs text-gray-400">{t.emotion || '-'}</td>
+                                                        <td className="text-xs">
+                                                            <button onClick={() => handleEditTrade(t)} className="text-blue-400 hover:text-blue-300 mr-2">✎</button>
+                                                            <button onClick={() => handleDeleteTrade(t.id)} className="text-red-400 hover:text-red-300">🗑</button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {currentView === 'analysis' && (
+                            <>
+                                {/* Coût de l'indiscipline */}
+                                <div className="card p-6 mb-6" style={{background: '#EF4444', backgroundImage: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%)'}}>
+                                    <div className="section-title mb-2" style={{color: '#FEF2F2'}}>COÛT DE L'INDISCIPLINE</div>
+                                    <div className="grid grid-cols-3 gap-6">
+                                        <div>
+                                            <div className="text-xs text-red-100 mb-1">Perdu en € sur trades hors-plan</div>
+                                            <div className="mono text-3xl font-bold text-white">-{stats.indisciplineCost.toLocaleString('fr-FR', {maximumFractionDigits: 0})} {settings.currency}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-red-100 mb-1">Perdu en R sur trades hors-plan</div>
+                                            <div className="mono text-3xl font-bold text-white">-{stats.indisciplineCostR.toFixed(2)} R</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-xs text-red-100 mb-1">% du capital gaspillé</div>
+                                            <div className="mono text-3xl font-bold text-white">{((stats.indisciplineCost / settings.startingCapital) * 100).toFixed(2)} %</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Performance par Setup */}
+                                <div className="card p-6 mb-6">
+                                    <div className="section-title mb-4">PERFORMANCE PAR SETUP (MON PLAN)</div>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {Object.entries(performanceBySetup).map(([setup, data]) => (
+                                            <div key={setup} className="stat-card">
+                                                <div className="text-xs text-gray-400 mb-2 uppercase">{setup.replace('-', ' → ')}</div>
+                                                <div className="text-sm mono font-semibold mb-1">{data.trades} trades • WR {data.winRate.toFixed(1)} %</div>
+                                                <div className="text-xs">
+                                                    <span className={data.avgR >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                                        {data.avgR >= 0 ? '+' : ''}{data.avgR.toFixed(2)} R/trade
+                                                    </span>
+                                                    <span className="text-gray-400"> • </span>
+                                                    <span className={data.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                                        {data.totalPnl >= 0 ? '+' : ''}{data.totalPnl.toLocaleString('fr-FR', {maximumFractionDigits: 0})} {settings.currency}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Performance par Actif */}
+                                <div className="card p-6 mb-6">
+                                    <div className="section-title mb-4">PERFORMANCE PAR ACTIF</div>
+                                    <div className="grid grid-cols-6 gap-4">
+                                        {performanceByAsset.map(([asset, data]) => (
+                                            <div key={asset} className="stat-card">
+                                                <div className="text-xs text-gray-400 mb-2 uppercase">{asset}</div>
+                                                <div className="text-sm mono font-semibold mb-1">{data.trades} trades</div>
+                                                <div className="text-xs mb-1">WR {data.winRate.toFixed(1)} %</div>
+                                                <div className="text-xs">
+                                                    <span className={data.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                                        {data.totalPnl >= 0 ? '+' : ''}{data.totalPnl.toLocaleString('fr-FR', {maximumFractionDigits: 0})} {settings.currency}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Performance par Killzone */}
+                                <div className="card p-6 mb-6">
+                                    <div className="section-title mb-4">PERFORMANCE PAR SESSION / KILLZONE</div>
+                                    <div className="grid grid-cols-3 gap-4">
+                                        {Object.entries(performanceByKillzone).map(([kz, data]) => (
+                                            <div key={kz} className="stat-card">
+                                                <div className="text-xs text-gray-400 mb-2 uppercase">{kz}</div>
+                                                <div className="text-sm mono font-semibold mb-1">{data.trades} trades • WR {data.winRate.toFixed(1)} %</div>
+                                                <div className="text-xs">
+                                                    <span className={data.avgR >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                                        {data.avgR >= 0 ? '+' : ''}{data.avgR.toFixed(2)} R/trade
+                                                    </span>
+                                                    <span className="text-gray-400"> • </span>
+                                                    <span className={data.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                                        {data.totalPnl >= 0 ? '+' : ''}{data.totalPnl.toLocaleString('fr-FR', {maximumFractionDigits: 0})} {settings.currency}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Impact Psychologique */}
+                                <div className="card p-6">
+                                    <div className="section-title mb-4">IMPACT PSYCHOLOGIQUE</div>
+                                    <div className="grid grid-cols-5 gap-4">
+                                        {Object.entries(performanceByEmotion).map(([emotion, data]) => (
+                                            <div key={emotion} className="stat-card">
+                                                <div className="text-xs text-gray-400 mb-2 uppercase">{emotion}</div>
+                                                <div className="text-sm mono font-semibold mb-1">{data.trades} trades</div>
+                                                <div className="text-xs mb-1">WR {data.winRate.toFixed(1)} %</div>
+                                                <div className="text-xs">
+                                                    <span className={data.totalPnl >= 0 ? 'text-green-400' : 'text-red-400'}>
+                                                        {data.totalPnl >= 0 ? '+' : ''}{data.totalPnl.toLocaleString('fr-FR', {maximumFractionDigits: 0})} {settings.currency}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Trade Modal */}
+                    {showTradeModal && (
+                        <div className="modal-overlay flex items-center justify-center p-4" onClick={() => {setShowTradeModal(false); setEditingTrade(null); resetForm();}}>
+                            <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                                <div className="window-header">
+                                    <span className="window-dot" style={{background: '#FF5F56'}}></span>
+                                    <span className="window-dot" style={{background: '#FFBD2E'}}></span>
+                                    <span className="window-dot" style={{background: '#27C93F'}}></span>
+                                    <span className="window-title">{editingTrade ? 'Modifier un trade' : 'Ajoute un trade'}</span>
+                                    <button onClick={() => {setShowTradeModal(false); setEditingTrade(null); resetForm();}} className="text-gray-500 hover:text-white">✕</button>
+                                </div>
+
+                                <div className="card" style={{borderRadius: '0 0 8px 8px', borderTop: 'none'}}>
+                                    <div className="p-6 space-y-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-semibold text-gray-400 mb-2">DATE ET HEURE</label>
+                                                <input type="datetime-local" value={formData.date} onChange={(e) => setFormData({...formData, date: e.target.value})} />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-semibold text-gray-400 mb-2">ACTIF</label>
+                                                <input type="text" placeholder="XAUUSD" value={formData.asset} onChange={(e) => setFormData({...formData, asset: e.target.value.toUpperCase()})} />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-400 mb-2">SENS</label>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <button className={`py-4 rounded-lg font-semibold text-sm ${formData.direction === 'buy' ? 'btn-green' : 'border border-gray-700'}`} onClick={() => setFormData({...formData, direction: 'buy'})}>ACHAT • BUY</button>
+                                                <button className={`py-4 rounded-lg font-semibold text-sm ${formData.direction === 'sell' ? 'btn-red' : 'border border-gray-700'}`} onClick={() => setFormData({...formData, direction: 'sell'})}>VENTE • SELL</button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-400 mb-2">ISSUE DU TRADE *</label>
+                                            <div className="grid grid-cols-3 gap-3">
+                                                <button className={`py-3 rounded-lg text-sm font-semibold ${formData.outcome === 'tp' ? 'tag-gold active' : 'border border-gray-700'}`} onClick={() => setFormData({...formData, outcome: 'tp'})}>TP TOUCHÉ</button>
+                                                <button className={`py-3 rounded-lg text-sm font-semibold ${formData.outcome === 'sl' ? 'tag-gold active' : 'border border-gray-700'}`} onClick={() => setFormData({...formData, outcome: 'sl'})}>SL TOUCHÉ</button>
+                                                <button className={`py-3 rounded-lg text-sm font-semibold ${formData.outcome === 'break-even' ? 'tag-gold active' : 'border border-gray-700'}`} onClick={() => setFormData({...formData, outcome: 'break-even'})}>BREAK-EVEN</button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-400 mb-2">GAIN / PERTE • RISQUE • R</label>
+                                            <div className="grid grid-cols-3 gap-4 mb-3">
+                                                <input type="number" placeholder="ex. 250" value={formData.pnl} onChange={(e) => setFormData({...formData, pnl: e.target.value})} />
+                                                <input type="number" placeholder="ex. 100" value={formData.risk} onChange={(e) => setFormData({...formData, risk: e.target.value})} />
+                                                <input type="text" value={`${calculatedR >= 0 ? '+' : ''}${calculatedR} R`} disabled className="mono font-semibold" />
+                                            </div>
+                                            <div className={`p-3 rounded-lg text-center mono font-semibold ${parseFloat(calculatedPercent) >= 0 ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}`}>
+                                                {parseFloat(calculatedPercent) >= 0 ? '+' : ''}{calculatedPercent} % du compte
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-400 mb-2">STRATÉGIE</label>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <button className={`py-4 rounded-lg font-semibold text-sm ${formData.strategy === 'ts' ? 'btn-gold' : 'border border-gray-700'}`} onClick={() => setFormData({...formData, strategy: 'ts'})}>T.S STRATEGY</button>
+                                                <button className={`py-4 rounded-lg font-semibold text-sm ${formData.strategy === 'lrhs' ? 'btn-gold' : 'border border-gray-700'}`} onClick={() => setFormData({...formData, strategy: 'lrhs'})}>LRHS STRATEGY</button>
+                                            </div>
+                                        </div>
+
+                                        {formData.strategy && (
+                                            <div className="card p-4 space-y-4" style={{background: '#0B101B'}}>
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-gray-400 mb-2">MÉTHODOLOGIE</label>
+                                                    <div className="flex gap-2 flex-wrap">
+                                                        {settings.customMethodologies.map(m => {
+                                                            const key = m.toLowerCase().replace(/ /g, '-').replace(/\//g, '-');
+                                                            return (
+                                                                <button key={key} className={`px-4 py-2 rounded-lg text-xs font-semibold ${formData.methodology === key ? 'tag-gold active' : 'tag-gold'}`} onClick={() => setFormData({...formData, methodology: key})}>
+                                                                    {m}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">FVG HTF</label>
+                                                        <div className="flex gap-2">
+                                                            {['daily', 'h4', 'h1'].map(htf => (
+                                                                <button key={htf} className={`px-4 py-2 rounded-lg text-xs font-semibold ${formData.fvgHtf === htf ? 'tag-gold active' : 'tag-gold'}`} onClick={() => setFormData({...formData, fvgHtf: htf})}>
+                                                                    {htf.toUpperCase()}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">CONFIRMATION</label>
+                                                        <div className="flex gap-2">
+                                                            {settings.customSignals.map(c => {
+                                                                const key = c.toLowerCase().replace(/ /g, '-');
+                                                                return (
+                                                                    <button key={key} className={`px-4 py-2 rounded-lg text-xs font-semibold ${formData.confirmation === key ? 'tag-gold active' : 'tag-gold'}`} onClick={() => setFormData({...formData, confirmation: key})}>
+                                                                        {c}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-gray-400 mb-2">UT DE CONFIRMATION</label>
+                                                    <div className="flex gap-2 mb-3">
+                                                        {['h1', 'm15', 'm5'].map(ut => (
+                                                            <button key={ut} className={`px-4 py-2 rounded-lg text-xs font-semibold ${formData.utConfirmation === ut ? 'tag-gold active' : 'tag-gold'}`} onClick={() => setFormData({...formData, utConfirmation: ut})}>
+                                                                {ut.toUpperCase()}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                    <div className="auto-badge">UT DE CONFIRMATION AUTOMATIQUE</div>
+                                                    <div className="text-xs text-gray-500 mt-2 text-center">FVG {formData.fvgHtf?.toUpperCase()} → Confirmation {formData.utConfirmation?.toUpperCase()}</div>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">TENDANCE HTF</label>
+                                                        <div className="flex gap-2">
+                                                            <button className={`px-4 py-2 rounded-lg text-xs font-semibold ${formData.trendHtf === 'haussiere' ? 'tag-gold active' : 'tag-gold'}`} onClick={() => setFormData({...formData, trendHtf: 'haussiere'})}>Haussière</button>
+                                                            <button className={`px-4 py-2 rounded-lg text-xs font-semibold ${formData.trendHtf === 'baissiere' ? 'tag-gold active' : 'tag-gold'}`} onClick={() => setFormData({...formData, trendHtf: 'baissiere'})}>Baissière</button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">ÉMOTION</label>
+                                                        <div className="flex gap-2 flex-wrap">
+                                                            {['stable', 'confiant', 'stresse', 'fomo', 'frustre'].map(e => (
+                                                                <button key={e} className={`px-3 py-2 rounded-lg text-xs font-semibold ${formData.emotion === e ? 'tag-gold active' : 'tag-gold'}`} onClick={() => setFormData({...formData, emotion: e})}>
+                                                                    {e.charAt(0).toUpperCase() + e.slice(1)}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-gray-400 mb-2">KILLZONE</label>
+                                                    <div className="flex gap-2">
+                                                        {['londres', 'new-york', 'asie'].map(k => (
+                                                            <button key={k} className={`px-4 py-2 rounded-lg text-xs font-semibold ${formData.killzone === k ? 'tag-gold active' : 'tag-gold'}`} onClick={() => setFormData({...formData, killzone: k})}>
+                                                                {k === 'londres' ? 'Londres' : k === 'new-york' ? 'New York' : 'Asie'}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Checklist Discipline */}
+                                        <div className="card p-4" style={{background: '#0B101B'}}>
+                                            <div className="text-xs font-semibold text-gray-400 mb-3">CHECKLIST DE DISCIPLINE PRÉ-TRADE</div>
+                                            <div className="space-y-2">
+                                                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                                    <input type="checkbox" checked={formData.checklist.fvgClean} onChange={(e) => setFormData({...formData, checklist: {...formData.checklist, fvgClean: e.target.checked}})} />
+                                                    <span>FVG HTF propre et non mitigé</span>
+                                                </label>
+                                                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                                    <input type="checkbox" checked={formData.checklist.signalConfirmed} onChange={(e) => setFormData({...formData, checklist: {...formData.checklist, signalConfirmed: e.target.checked}})} />
+                                                    <span>Clôture franche du signal en UT confirmée</span>
+                                                </label>
+                                                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                                    <input type="checkbox" checked={formData.checklist.riskCompliant} onChange={(e) => setFormData({...formData, checklist: {...formData.checklist, riskCompliant: e.target.checked}})} />
+                                                    <span>Risque & Stop Loss conformes au plan</span>
+                                                </label>
+                                                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                                                    <input type="checkbox" checked={formData.checklist.noNews} onChange={(e) => setFormData({...formData, checklist: {...formData.checklist, noNews: e.target.checked}})} />
+                                                    <span>Pas d'annonce économique majeure imminente</span>
+                                                </label>
+                                            </div>
+                                            <div className="mt-3 p-2 rounded text-center text-sm font-semibold" style={{background: 'rgba(229, 193, 88, 0.15)', color: '#F3D37A'}}>
+                                                Score de Discipline : {formData.disciplineScore.toFixed(0)} %
+                                            </div>
+                                        </div>
+
+                                        {/* Qualité & Gestion */}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-semibold text-gray-400 mb-2">QUALITÉ DU SETUP</label>
+                                                <div className="flex gap-2">
+                                                    {['A+', 'A', 'B', 'Hors-Plan'].map(q => (
+                                                        <button key={q} className={`px-3 py-2 rounded-lg text-xs font-semibold ${formData.setupQuality === q ? 'tag-gold active' : 'tag-gold'}`} onClick={() => setFormData({...formData, setupQuality: q})}>
+                                                            {q}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-xs font-semibold text-gray-400 mb-2">GESTION EN COURS</label>
+                                                <select value={formData.managementType} onChange={(e) => setFormData({...formData, managementType: e.target.value})} className="text-xs py-2">
+                                                    <option value="tp-direct">TP Direct</option>
+                                                    <option value="sl-direct">SL Direct</option>
+                                                    <option value="be-plus1r">Mis à BE à +1R</option>
+                                                    <option value="cloture-partielle">Clôture partielle</option>
+                                                    <option value="sortie-manuelle">Sortie manuelle</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-semibold text-gray-400 mb-2">PLAN RESPECTÉ ?</label>
+                                                <div className="flex gap-2">
+                                                    <button className={`flex-1 py-2 rounded-lg text-xs font-semibold ${formData.planRespected ? 'btn-green' : 'border border-gray-700'}`} onClick={() => setFormData({...formData, planRespected: true})}>Oui</button>
+                                                    <button className={`flex-1 py-2 rounded-lg text-xs font-semibold ${!formData.planRespected ? 'btn-red' : 'border border-gray-700'}`} onClick={() => setFormData({...formData, planRespected: false})}>Non</button>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label className="block text-xs font-semibold text-gray-400 mb-2">TAG D'ERREUR</label>
+                                                <select value={formData.errorTag} onChange={(e) => setFormData({...formData, errorTag: e.target.value})} className="text-xs py-2">
+                                                    <option value="none">Aucune (Perte normale)</option>
+                                                    <option value="entree-anticipee">Entrée anticipée</option>
+                                                    <option value="fvg-mitige">FVG déjà mitigé</option>
+                                                    <option value="sl-trop-serre">SL trop serré</option>
+                                                    <option value="sortie-prematuree">Sortie prématurée (Peur)</option>
+                                                    <option value="overtrading">Overtrading / Revanche</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-semibold text-gray-400 mb-2">NOTES</label>
+                                            <textarea rows="3" placeholder="Ton analyse..." value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})}></textarea>
+                                        </div>
+
+                                        <div className="flex gap-3 pt-4">
+                                            <button onClick={() => {setShowTradeModal(false); setEditingTrade(null); resetForm();}} className="flex-1 py-3 rounded-lg border border-gray-700 text-sm font-semibold hover:bg-gray-800">ANNULER</button>
+                                            <button onClick={handleAddTrade} className="flex-1 btn-gold py-3 rounded-lg text-sm" disabled={!formData.date || !formData.asset || !formData.pnl}>
+                                                {editingTrade ? 'MODIFIER' : 'ENREGISTRER'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Settings Modal */}
+                    {showSettingsModal && (
+                        <div className="modal-overlay flex items-center justify-center p-4" onClick={() => setShowSettingsModal(false)}>
+                            <div className="w-full max-w-3xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                                <div className="window-header">
+                                    <span className="window-dot" style={{background: '#FF5F56'}}></span>
+                                    <span className="window-dot" style={{background: '#FFBD2E'}}></span>
+                                    <span className="window-dot" style={{background: '#27C93F'}}></span>
+                                    <span className="window-title">MODIFIER LE COMPTE & MES PARAMÈTRES</span>
+                                    <button onClick={() => setShowSettingsModal(false)} className="text-gray-500 hover:text-white">✕</button>
+                                </div>
+
+                                <div className="card" style={{borderRadius: '0 0 8px 8px', borderTop: 'none'}}>
+                                    <div className="flex border-b border-gray-800">
+                                        <div className={`settings-tab ${settingsTab === 'account' ? 'active' : ''}`} onClick={() => setSettingsTab('account')}>Compte & Prop Firm</div>
+                                        <div className={`settings-tab ${settingsTab === 'rules' ? 'active' : ''}`} onClick={() => setSettingsTab('rules')}>Mes Règles de Gestion</div>
+                                        <div className={`settings-tab ${settingsTab === 'custom' ? 'active' : ''}`} onClick={() => setSettingsTab('custom')}>Actifs & Setups</div>
+                                        <div className={`settings-tab ${settingsTab === 'data' ? 'active' : ''}`} onClick={() => setSettingsTab('data')}>Données</div>
+                                    </div>
+
+                                    <div className="p-6 space-y-6">
+                                        {settingsTab === 'account' && (
+                                            <>
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-gray-400 mb-2">NOM DU JOURNAL / CHALLENGE</label>
+                                                    <input type="text" value={settings.challengeName} onChange={(e) => setSettings({...settings, challengeName: e.target.value})} />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-gray-400 mb-2">SOUS-TITRE</label>
+                                                    <input type="text" value={settings.subtitle} onChange={(e) => setSettings({...settings, subtitle: e.target.value})} />
+                                                </div>
+
+                                                <div className="grid grid-cols-3 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">CAPITAL DE DÉPART</label>
+                                                        <input type="number" value={settings.startingCapital} onChange={(e) => setSettings({...settings, startingCapital: parseFloat(e.target.value)})} />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">DEVISE</label>
+                                                        <select value={settings.currency} onChange={(e) => setSettings({...settings, currency: e.target.value})}>
+                                                            <option value="€">€ (Euro)</option>
+                                                            <option value="$">$ (Dollar)</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">PROP FIRM</label>
+                                                        <input type="text" value={settings.propFirm} onChange={(e) => setSettings({...settings, propFirm: e.target.value})} />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {settingsTab === 'rules' && (
+                                            <>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">OBJECTIF DU MOIS / CHALLENGE (%)</label>
+                                                        <input type="number" step="0.1" value={settings.targetPercent} onChange={(e) => setSettings({...settings, targetPercent: parseFloat(e.target.value)})} />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">PERTE MAX JOURNALIÈRE (%)</label>
+                                                        <input type="number" step="0.1" value={settings.maxDailyLossPercent} onChange={(e) => setSettings({...settings, maxDailyLossPercent: parseFloat(e.target.value)})} />
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-3 gap-4">
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">MAX DRAWDOWN (%)</label>
+                                                        <input type="number" step="0.1" value={settings.maxDrawdownPercent} onChange={(e) => setSettings({...settings, maxDrawdownPercent: parseFloat(e.target.value)})} />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">TRADES MAX / JOUR</label>
+                                                        <input type="number" value={settings.maxTradesPerDay} onChange={(e) => setSettings({...settings, maxTradesPerDay: parseInt(e.target.value)})} />
+                                                    </div>
+
+                                                    <div>
+                                                        <label className="block text-xs font-semibold text-gray-400 mb-2">RISQUE MAX / TRADE (%)</label>
+                                                        <input type="number" step="0.1" value={settings.maxRiskPerTrade} onChange={(e) => setSettings({...settings, maxRiskPerTrade: parseFloat(e.target.value)})} />
+                                                    </div>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {settingsTab === 'custom' && (
+                                            <>
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-gray-400 mb-2">MES ACTIFS FAVORIS (séparés par des virgules)</label>
+                                                    <input type="text" value={settings.customAssets.join(', ')} onChange={(e) => setSettings({...settings, customAssets: e.target.value.split(',').map(a => a.trim())})} />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-gray-400 mb-2">MES MÉTHODOLOGIES (séparées par des virgules)</label>
+                                                    <input type="text" value={settings.customMethodologies.join(', ')} onChange={(e) => setSettings({...settings, customMethodologies: e.target.value.split(',').map(m => m.trim())})} />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-gray-400 mb-2">MES SIGNAUX (séparés par des virgules)</label>
+                                                    <input type="text" value={settings.customSignals.join(', ')} onChange={(e) => setSettings({...settings, customSignals: e.target.value.split(',').map(s => s.trim())})} />
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {settingsTab === 'data' && (
+                                            <>
+                                                <div className="text-sm text-gray-300 mb-4">Gérez vos données de trading : sauvegarde complète, restauration et données de test.</div>
+
+                                                <div className="space-y-3">
+                                                    <button onClick={exportJSON} className="w-full btn-gold py-3 rounded-lg text-sm">
+                                                        💾 SAUVEGARDER (Export JSON)
+                                                    </button>
+
+                                                    <label className="w-full btn-gold py-3 rounded-lg text-sm block text-center cursor-pointer">
+                                                        📂 RESTAURER (Import JSON)
+                                                        <input type="file" accept=".json" onChange={importJSON} className="hidden" />
+                                                    </label>
+
+                                                    <button onClick={loadDemoData} className="w-full py-3 rounded-lg text-sm border border-gray-700 hover:bg-gray-800">
+                                                        🎯 CHARGER DES DONNÉES DE TEST (16 trades)
+                                                    </button>
+
+                                                    <button onClick={clearAllData} className="w-full py-3 rounded-lg text-sm bg-red-900/30 border border-red-700 text-red-300 hover:bg-red-900/50">
+                                                        🗑 RÉINITIALISER LE JOURNAL À ZÉRO
+                                                    </button>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        <div className="flex gap-3 pt-4 border-t border-gray-800">
+                                            <button onClick={() => setShowSettingsModal(false)} className="flex-1 btn-gold py-3 rounded-lg text-sm">
+                                                ENREGISTRER & FERMER
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Day Detail Modal */}
+                    {showDayDetailModal && (
+                        <div className="modal-overlay flex items-center justify-center p-4" onClick={() => setShowDayDetailModal(false)}>
+                            <div className="w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
+                                <div className="window-header">
+                                    <span className="window-dot" style={{background: '#FF5F56'}}></span>
+                                    <span className="window-dot" style={{background: '#FFBD2E'}}></span>
+                                    <span className="window-dot" style={{background: '#27C93F'}}></span>
+                                    <span className="window-title">TRADES DU JOUR • {selectedDayTrades[0] && new Date(selectedDayTrades[0].date).toLocaleDateString('fr-FR', {day: '2-digit', month: 'long', year: 'numeric'})}</span>
+                                    <button onClick={() => setShowDayDetailModal(false)} className="text-gray-500 hover:text-white">✕</button>
+                                </div>
+
+                                <div className="card" style={{borderRadius: '0 0 8px 8px', borderTop: 'none'}}>
+                                    <div className="p-6 space-y-4">
+                                        {selectedDayTrades.map(t => (
+                                            <div key={t.id} className="card p-4" style={{background: '#0B101B'}}>
+                                                <div className="flex items-center justify-between mb-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="mono text-xs text-gray-400">{new Date(t.date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+                                                        <span className="mono text-sm font-bold">{t.asset}</span>
+                                                        <span className={`text-xs font-semibold ${t.direction === 'buy' ? 'text-green-400' : 'text-red-400'}`}>{t.direction === 'buy' ? 'BUY' : 'SELL'}</span>
+                                                        <span className="text-xs">{t.fvgHtf?.toUpperCase()} → {t.utConfirmation?.toUpperCase()}</span>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button onClick={() => {handleEditTrade(t); setShowDayDetailModal(false);}} className="text-blue-400 hover:text-blue-300 text-sm">✎ Modifier</button>
+                                                        <button onClick={() => {handleDeleteTrade(t.id); setShowDayDetailModal(false);}} className="text-red-400 hover:text-red-300 text-sm">🗑 Supprimer</button>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-6 text-sm">
+                                                    <span className={`mono font-semibold ${t.pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {t.pnl >= 0 ? '+' : ''}{t.pnl.toLocaleString('fr-FR', {minimumFractionDigits: 2})} {settings.currency}
+                                                    </span>
+                                                    <span className="mono">{t.risk ? `${(t.pnl / t.risk) >= 0 ? '+' : ''}${(t.pnl / t.risk).toFixed(2)} R` : '-'}</span>
+                                                    <span className="text-gray-400">Killzone : {t.killzone || '-'}</span>
+                                                    <span className="text-gray-400">Émotion : {t.emotion || '-'}</span>
+                                                    <span>{t.planRespected ? <span className="text-green-400">✓ Plan OK</span> : <span className="text-red-400">✗ Hors-Plan</span>}</span>
+                                                </div>
+                                                {t.notes && <div className="text-xs text-gray-400 mt-2">{t.notes}</div>}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showToast && (
+                        <div className="toast">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M10 0C4.48 0 0 4.48 0 10C0 15.52 4.48 20 10 20C15.52 20 20 15.52 20 10C20 4.48 15.52 0 10 0ZM8 15L3 10L4.41 8.59L8 12.17L15.59 4.58L17 6L8 15Z" fill="currentColor"/>
+                            </svg>
+                            <span className="font-semibold">{toastMessage}</span>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<TradingJournal />, document.getElementById('app'));
+    </script>
+</body>
+</html>
